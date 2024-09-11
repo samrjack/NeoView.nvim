@@ -11,7 +11,8 @@
 
 --]]
 local NeoView = {}
-
+-- Save stuff in here for now I guess
+local user_options = {}
 
 local NEOVIEW_DIR = vim.fn.stdpath('cache') .. '/NeoView'
 local VIEWS_DIR = NEOVIEW_DIR .. '/views'
@@ -24,6 +25,8 @@ NeoView.setup = function(opts)
 	if vim.g.neoview_setup then
 		return
 	end
+
+	if opts ~= nil then user_options = opts end
 
 	vim.g.neoview_setup = true
 
@@ -117,9 +120,18 @@ function NeoView.save_cursor_position()
 end
 
 function NeoView.valid_buffer()
+	-- Check buffer type for a special buffer
 	local buftype = vim.bo.buftype
-	local disabled = { 'help', 'prompt', 'nofile', 'terminal' }
-	if not vim.tbl_contains(disabled, buftype) then return true end
+	local disabled_buftypes = { 'help', 'prompt', 'nofile', 'terminal' }
+	if vim.tbl_contains(disabled_buftypes, buftype) then return false end
+
+	-- Check filetypes
+	-- TODO add this to the opts
+	local filetype = vim.bo.filetype
+	local disabled_filetypes = user_options.disabled_filetypes or { 'NeogitCommitMessage' }
+	if vim.tbl_contains(disabled_filetypes, filetype) then return false end
+
+	return true
 end
 
 return NeoView
