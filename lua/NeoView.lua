@@ -35,7 +35,19 @@ NeoView.setup = function(opts)
 	vim.api.nvim_create_autocmd('BufWinEnter', {
 		group = vim.api.nvim_create_augroup('NeoView', { clear = true }),
 		callback = function()
-			pcall(function() NeoView.restore_view() end)
+			pcall(function()
+				-- This is an attempt to allow functions that take you
+				-- to other files not have their cursor positions moved
+				-- from the spot they're taking you to.
+				-- ex. telescope grep
+				local r, c = unpack(vim.api.nvim_win_get_cursor(0))
+				-- check for the start of the buffer. using 2 is arbitrary since I
+				-- THINK the original cursor position is (1,0) but I can't guarentee that'll
+				-- always be the case.
+				if (r < 2 and c < 2) then
+					NeoView.restore_view()
+				end
+			end)
 		end,
 	})
 
